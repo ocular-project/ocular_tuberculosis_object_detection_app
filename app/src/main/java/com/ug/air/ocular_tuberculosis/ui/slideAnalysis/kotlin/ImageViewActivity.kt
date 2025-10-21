@@ -95,8 +95,12 @@ class ImageViewActivity : AppCompatActivity() {
                 if (model.equals("Yes")) {
                     urlList = image.images
                         .reversed()
-                        .filter { it.analysed == "" }
                         .toMutableList() as ArrayList<Urls>
+
+//                    urlList = image.images
+//                        .reversed()
+//                        .filter { it.analysed == "" }
+//                        .toMutableList() as ArrayList<Urls>
 
                     viewPagerAdapter = ViewPagerAdapter(urlList, this, category, position)
 

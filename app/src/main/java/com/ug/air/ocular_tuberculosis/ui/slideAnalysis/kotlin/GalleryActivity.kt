@@ -145,11 +145,12 @@ class GalleryActivity : AppCompatActivity() {
         if (screen == null) {
             default = "original"
             setDataDefault()
-            askCameraPermission()
+//            askCameraPermission()
         } else  {
 //            default = screen.toString()
             default = "original"
             setDataDefault()
+            askCameraPermission()
         }
     }
 

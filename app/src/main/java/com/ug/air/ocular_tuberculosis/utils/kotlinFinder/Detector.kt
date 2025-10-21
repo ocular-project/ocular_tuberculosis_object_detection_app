@@ -32,7 +32,7 @@ class Detector (private val context: Context) {
 
     private val inputSize = 960
     private val confidenceThreshold = 0.25f
-    private val nmsThreshold = 0.45f
+    private val nmsThreshold = 0.25f
     private val classesList = mapOf(
         0 to "AFB",
     )
@@ -63,10 +63,7 @@ class Detector (private val context: Context) {
                     val outputBuffer = Array(1) { Array(300) { FloatArray(6) } }
 
                     val inferenceTime = measureTimeMillis {
-                        // Run inference
-                        val outputs = HashMap<Int, Any>()
-                        outputs[0] = outputBuffer
-                        interpreter.runForMultipleInputsOutputs(arrayOf(input), outputs)
+                        interpreter.runForMultipleInputsOutputs(arrayOf(input), mapOf(0 to outputBuffer))
                     }
 
                     Log.d("ObjectDetector", "Model inference time: ${inferenceTime}ms")
@@ -74,68 +71,69 @@ class Detector (private val context: Context) {
                     // Process detections
                     val detections = ArrayList<Detection>()
 
-                    // Use actual bitmap dimensions instead of hardcoded values
-//                    val originalWidth = originalBitmap.width
-//                    val originalHeight = originalBitmap.height
                     val originalWidth = originalBitmap.width.toFloat()
                     val originalHeight = originalBitmap.height.toFloat()
 
-//                    for (i in 0 until 300) {
-//                        // Get class scores (indices 4-5)
-//                        var maxScore = 0f
-//                        var classId = -1
-//                        for (j in 0 until 2) { // 2 classesList
-//                            val score = outputBuffer[0][4 + j][i]
-//                            if (score > maxScore) {
-//                                maxScore = score
-//                                classId = j
-//                            }
-//                        }
-//
-//                        if (maxScore > confidenceThreshold && classId != -1) {
-//                            // Get bounding box coordinates
-//                            val x = outputBuffer[0][0][i] // center_x
-//                            val y = outputBuffer[0][1][i] // center_y
-//                            val w = outputBuffer[0][2][i] // width
-//                            val h = outputBuffer[0][3][i] // height
-//
-//                            // Convert to pixel coordinates
-//                            val left = maxOf(0f, minOf(originalWidth.toFloat(), (x - w/2) * originalWidth))
-//                            val top = maxOf(0f, minOf(originalHeight.toFloat(), (y - h/2) * originalHeight))
-//                            val right = maxOf(0f, minOf(originalWidth.toFloat(), (x + w/2) * originalWidth))
-//                            val bottom = maxOf(0f, minOf(originalHeight.toFloat(), (y + h/2) * originalHeight))
-//
-////                            Log.d("Detection all boxex", "Confidence: %.3f, Box: [%.0f, %.0f, %.0f, %.0f]"
-////                                .format(maxScore, left, top, right, bottom))
-//
-//                            if (right > left && bottom > top) {
-//                                detections.add(Detection(classId, maxScore, left, top, right, bottom))
-////                                Log.d("Malaria", "runDetection: Box added")
-//                            }
-//                        }
-//                    }
+                    var validDetectionsCount = 0
+                    var highConfidenceCount = 0
 
                     for (i in 0 until 300) {
-                        val x = outputBuffer[0][i][0]
-                        val y = outputBuffer[0][i][1]
-                        val w = outputBuffer[0][i][2]
-                        val h = outputBuffer[0][i][3]
+                        val xCenter = outputBuffer[0][i][0]
+                        val yCenter = outputBuffer[0][i][1]
+                        val width = outputBuffer[0][i][2]
+                        val height = outputBuffer[0][i][3]
                         val classId = outputBuffer[0][i][4].toInt()
                         val confidence = outputBuffer[0][i][5]
 
+                        if (i < 5) {
+                            Log.d("ObjectDetector", "Detection $i: x=$xCenter, y=$yCenter, w=$width, h=$height, cls=$classId, conf=$confidence")
+                        }
+
                         if (confidence > confidenceThreshold) {
-                            val left = max(0f, min(originalWidth, (x - w / 2) * originalWidth))
-                            val top = max(0f, min(originalHeight, (y - h / 2) * originalHeight))
-                            val right = max(0f, min(originalWidth, (x + w / 2) * originalWidth))
-                            val bottom = max(0f, min(originalHeight, (y + h / 2) * originalHeight))
+                            validDetectionsCount++
+                            val isNormalized = xCenter <= 1.0f && yCenter <= 1.0f
+
+                            val left: Float
+                            val top: Float
+                            val right: Float
+                            val bottom: Float
+
+                            if (isNormalized) {
+                                // Coordinates are normalized (0-1), scale to image dimensions
+                                left = max(0f, min(originalWidth, (xCenter - width / 2) * originalWidth))
+                                top = max(0f, min(originalHeight, (yCenter - height / 2) * originalHeight))
+                                right = max(0f, min(originalWidth, (xCenter + width / 2) * originalWidth))
+                                bottom = max(0f, min(originalHeight, (yCenter + height / 2) * originalHeight))
+                            } else {
+                                // Coordinates are already in pixel space (less common)
+                                left = max(0f, min(originalWidth, xCenter - width / 2))
+                                top = max(0f, min(originalHeight, yCenter - height / 2))
+                                right = max(0f, min(originalWidth, xCenter + width / 2))
+                                bottom = max(0f, min(originalHeight, yCenter + height / 2))
+                            }
+
 
                             if (right > left && bottom > top) {
-                                detections.add(Detection(classId, confidence, left, top, right, bottom))
+                                val boxWidth = right - left
+                                val boxHeight = bottom - top
+                                val boxArea = boxWidth * boxHeight
+                                val imageArea = originalWidth * originalHeight
+
+                                if (boxArea > imageArea * 0.0001f && boxArea < imageArea * 0.9f) {
+                                    detections.add(Detection(classId, confidence, left, top, right, bottom))
+                                    if (confidence > 0.5f) highConfidenceCount++
+                                }
                             }
                         }
                     }
 
+                    Log.d("ObjectDetector", "Raw detections above threshold: $validDetectionsCount")
+                    Log.d("ObjectDetector", "High confidence detections (>0.5): $highConfidenceCount")
+                    Log.d("ObjectDetector", "Valid boxes before NMS: ${detections.size}")
+
                     val finalDetections = applyNMS(detections, nmsThreshold)
+
+                    Log.d("ObjectDetector", "Final detections after NMS: ${finalDetections.size}")
 
                     if (finalDetections.isEmpty()) {
                         Log.d("ObjectDetector", "No detections found")
@@ -153,13 +151,21 @@ class Detector (private val context: Context) {
                     val resultBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true)
                     val canvas = Canvas(resultBitmap)
 
+                    val boxPaint = Paint().apply {
+                        style = Paint.Style.STROKE
+                        strokeWidth = max(5f, originalWidth / 200f) // Scale stroke width with image size
+                        color = Color.YELLOW
+                    }
+
+                    val textPaint = Paint().apply {
+                        color = Color.YELLOW
+                        textSize = max(24f, originalWidth / 40f)
+                        style = Paint.Style.FILL
+                        isAntiAlias = true
+                    }
+
                     finalDetections.forEach { detection ->
                         // Draw bounding box
-                        val boxPaint = Paint().apply {
-                            style = Paint.Style.STROKE
-                            strokeWidth = 10f
-                            color = if (detection.classId == 0) Color.YELLOW else Color.BLUE
-                        }
                         canvas.drawRect(
                             detection.left,
                             detection.top,
@@ -167,7 +173,17 @@ class Detector (private val context: Context) {
                             detection.bottom,
                             boxPaint
                         )
+
+                        // Draw confidence label
+                        val label = String.format("%.2f", detection.confidence)
+                        canvas.drawText(
+                            label,
+                            detection.left,
+                            max(detection.top - 5f, textPaint.textSize),
+                            textPaint
+                        )
                     }
+
                     Log.d("ObjectDetector", "Detections: $classCounts")
 
                     saveImage(resultBitmap, originalPath, classCounts, inferenceTime)
@@ -176,6 +192,7 @@ class Detector (private val context: Context) {
 
             } catch (e: Exception) {
                 Log.e("ObjectDetector", "Error processing image", e)
+                e.printStackTrace()
                 return@withContext null
             }
         }
