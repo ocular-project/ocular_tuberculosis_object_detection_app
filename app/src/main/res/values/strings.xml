@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Ocular (Tuberculosis)</string>
+    <string name="hello_guest">Hello Guest,</string>
+    <string name="automated">Welcome to the Automated mobile microscopic diagnosis app for Tuberculosis</string>
+    <string name="disease">What disease are you interested in</string>
+    <string name="malaria">Tuberculosis</string>
+    <string name="please_download_or_update_the_models_to_enable_their_use_in_via_image_based_processes">Please download or update the models to enable their use in image processing</string>
+    <string name="continue_3">Continue</string>
+    <string name="analyse_slide">Analyse Slide</string>
+    <string name="take_pictures">Take pictures</string>
+    <string name="original_images">Original images</string>
+    <string name="analysed_images">Analysed images</string>
+    <string name="original_and_analysed_images">Original and Analysed images</string>
+    <string name="total_white_blood_cells">Total white blood cells:</string>
+    <string name="total_trophozoites">Total trophozoites:</string>
+    <string name="time_taken">Time taken:</string>
+    <string name="total_time_taken">Total time taken:</string>
+</resources>

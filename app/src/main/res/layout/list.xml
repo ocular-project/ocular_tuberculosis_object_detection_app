@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/dialog_background">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/camera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/take_pictures"
+            android:fontFamily="@font/sora_medium"
+            android:textSize="@dimen/small"
+            android:layout_marginBottom="20dp"/>
+
+        <TextView
+            android:id="@+id/original"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/original_images"
+            android:fontFamily="@font/sora_medium"
+            android:textSize="@dimen/small"
+            android:layout_marginBottom="20dp"/>
+
+        <TextView
+            android:id="@+id/analysed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/analysed_images"
+            android:fontFamily="@font/sora_medium"
+            android:textSize="@dimen/small"
+            android:layout_marginBottom="20dp"/>
+
+        <TextView
+            android:id="@+id/both"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/original_and_analysed_images"
+            android:fontFamily="@font/sora_medium"
+            android:textSize="@dimen/small"
+            android:layout_marginBottom="10dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>

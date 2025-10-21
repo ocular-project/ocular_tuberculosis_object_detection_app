@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:padding="20dp"
+    android:orientation="horizontal"
+    android:weightSum="10">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="5"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginEnd="5dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Images:"
+            android:textColor="@color/gray"
+            android:fontFamily="@font/sora_regular"
+            android:textSize="@dimen/small"
+            android:layout_marginBottom="15dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/total_white_blood_cells"
+            android:textColor="@color/gray"
+            android:fontFamily="@font/sora_regular"
+            android:textSize="@dimen/small"
+            android:layout_marginBottom="15dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/total_trophozoites"
+            android:textColor="@color/gray"
+            android:fontFamily="@font/sora_regular"
+            android:textSize="@dimen/small"
+            android:layout_marginBottom="15dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/total_time_taken"
+            android:textColor="@color/gray"
+            android:fontFamily="@font/sora_regular"
+            android:textSize="@dimen/small"
+            android:layout_marginBottom="5dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="5"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginStart="5dp">
+
+        <TextView
+            android:id="@+id/images"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:fontFamily="@font/sora_regular"
+            android:textSize="@dimen/small"
+            android:layout_marginBottom="15dp"
+            android:gravity="end"/>
+
+        <TextView
+            android:id="@+id/wbc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:fontFamily="@font/sora_regular"
+            android:textSize="@dimen/small"
+            android:layout_marginBottom="15dp"
+            android:gravity="end"/>
+
+        <TextView
+            android:id="@+id/trop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:fontFamily="@font/sora_regular"
+            android:textSize="@dimen/small"
+            android:layout_marginBottom="15dp"
+            android:gravity="end"/>
+
+        <TextView
+            android:id="@+id/time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:fontFamily="@font/sora_regular"
+            android:textSize="@dimen/small"
+            android:layout_marginBottom="5dp"
+            android:gravity="end"/>
+
+    </LinearLayout>
+
+</LinearLayout>

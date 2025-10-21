@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="crime">#FEF3E7</color>
+    <!--    <color name="brown">#573926</color>-->
+    <color name="orange">#F79421</color>
+    <color name="brown">#043639</color>
+    <color name="blue">#AEAFF7</color>
+    <color name="marron">#EF5DA8</color>
+    <color name="gray">#707070</color>
+    <color name="light_gray">#C5C5C5</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

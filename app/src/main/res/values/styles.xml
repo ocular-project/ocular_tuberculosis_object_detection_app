@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="AppTheme" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/orange</item>
+<!--        <item name="colorPrimaryDark">@color/crime</item>-->
+<!--        <item name="colorAccent">@color/crime</item>-->
+        <item name="colorPrimaryVariant">@color/white</item>
+        <item name="android:windowBackground">@color/white</item>
+
+<!--        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>-->
+<!--        <item name="android:windowLightStatusBar">true</item>-->
+    </style>
+
+    <style name="Custom.OutlinedButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">@color/orange</item>
+    </style>
+
+    <style name="MyActionBar" parent="@style/Widget.AppCompat.ActionBar">
+        <!-- Customize the action bar icon color -->
+        <item name="android:background">@color/crime</item>
+        <item name="android:titleTextStyle">@style/MyActionBarTitle</item>
+    </style>
+
+    <style name="MyActionBarTitle" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <!-- Customize the action bar title text color -->
+        <item name="android:textColor">@color/brown</item>
+    </style>
+
+    <style name="RoundCorner" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">10dp</item>
+        <item name="color">@color/white</item>
+    </style>
+
+    <style name="roundImage">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">5%</item>
+    </style>
+
+    <style name="ToolbarTitleTextAppearance" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:fontFamily">@font/sora_regular</item> <!-- Replace with your font -->
+        <item name="android:textSize">@dimen/small</item> <!-- Adjust text size as needed -->
+        <item name="android:textColor">@color/black</item> <!-- Optional -->
+    </style>
+
+</resources>

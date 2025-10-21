@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="5dp">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:id="@+id/imageView"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="#FEF3E7"
+        android:scaleType="centerCrop"
+        app:shapeAppearance="@style/roundImage"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
