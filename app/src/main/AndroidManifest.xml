@@ -47,9 +47,6 @@
             android:exported="false" />
         <activity
             android:name=".ui.SplashActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -60,7 +57,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.ug.air.ocular_malaria"
+            android:authorities="com.ug.air.ocular_tuberculosis"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

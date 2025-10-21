@@ -3,17 +3,16 @@ package com.ug.air.ocular_tuberculosis.models;
 public class Urls {
 
     String original, analysed;
-    int trop;
-    int wbc;
+    int afb;
     long inferenceTime;
     Boolean isBothCategory = false;
     Boolean isAnalysedView = false;
 
-    public Urls(String original, String analysed, int trop, int wbc, long inferenceTime, Boolean isBothCategory, Boolean isAnalysedView) {
+    public Urls(String original, String analysed, int afb, long inferenceTime, Boolean isBothCategory, Boolean isAnalysedView) {
         this.original = original;
         this.analysed = analysed;
-        this.trop = trop;
-        this.wbc = wbc;
+        this.afb = afb;
+        this.inferenceTime = inferenceTime;
         this.isBothCategory = isBothCategory;
         this.isAnalysedView = isAnalysedView;
     }
@@ -36,21 +35,12 @@ public class Urls {
         return this;
     }
 
-    public int getTrop() {
-        return trop;
+    public int getAfb() {
+        return afb;
     }
 
-    public Urls setTrop(int trop) {
-        this.trop = trop;
-        return this;
-    }
-
-    public int getWbc() {
-        return wbc;
-    }
-
-    public Urls setWbc(int wbc) {
-        this.wbc = wbc;
+    public Urls setAfb(int afb) {
+        this.afb = afb;
         return this;
     }
 

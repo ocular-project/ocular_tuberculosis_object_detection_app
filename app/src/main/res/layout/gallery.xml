@@ -84,16 +84,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/total_white_blood_cells"
-                    android:textColor="@color/gray"
-                    android:fontFamily="@font/sora_regular"
-                    android:textSize="@dimen/smaller"
-                    android:layout_marginBottom="15dp"/>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/total_trophozoites"
+                    android:text="@string/total_afb"
                     android:textColor="@color/gray"
                     android:fontFamily="@font/sora_regular"
                     android:textSize="@dimen/smaller"
@@ -117,17 +108,7 @@
                 android:layout_marginStart="5dp">
 
                 <TextView
-                    android:id="@+id/wbc"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/black"
-                    android:fontFamily="@font/sora_regular"
-                    android:textSize="@dimen/smaller"
-                    android:layout_marginBottom="15dp"
-                    android:gravity="end"/>
-
-                <TextView
-                    android:id="@+id/trop"
+                    android:id="@+id/afb"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="@color/black"

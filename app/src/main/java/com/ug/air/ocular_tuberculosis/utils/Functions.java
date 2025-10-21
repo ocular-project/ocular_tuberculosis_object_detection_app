@@ -129,7 +129,7 @@ public class Functions {
             currentArrayList = new ArrayList<>();
 
             for (Current current : currentList) {
-                if (current.getDisease().equals("Malaria")){
+                if (current.getDisease().equals("Tuberculosis")){
                     current.setDownload("download");
                     current.setFilename("");
                     currentArrayList.add(current);

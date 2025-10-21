@@ -114,8 +114,7 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
                     .into(holder.imageView);
             holder.linearLayout.setVisibility(View.VISIBLE);
 
-            holder.wbc.setText(String.valueOf(url.getWbc()));
-            holder.trop.setText(String.valueOf(url.getTrop()));
+            holder.afb.setText(String.valueOf(url.getAfb()));
             holder.time.setText(millisecondsToMinutesSeconds(url.getInferenceTime()));
         }
         else {
@@ -134,8 +133,7 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
                         .into(holder.imageView);
                 holder.linearLayout.setVisibility(View.VISIBLE);
 
-                holder.wbc.setText(String.valueOf(url.getWbc()));
-                holder.trop.setText(String.valueOf(url.getTrop()));
+                holder.afb.setText(String.valueOf(url.getAfb()));
                 holder.time.setText(millisecondsToMinutesSeconds(url.getInferenceTime()));
             }
 
@@ -157,14 +155,13 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView wbc, trop, time;
+        TextView afb, time;
         ZoomageView imageView;
         LinearLayout linearLayout;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            wbc = itemView.findViewById(R.id.wbc);
-            trop = itemView.findViewById(R.id.trop);
+            afb = itemView.findViewById(R.id.afb);
             time = itemView.findViewById(R.id.time);
             imageView = itemView.findViewById(R.id.image);
             linearLayout = itemView.findViewById(R.id.info);

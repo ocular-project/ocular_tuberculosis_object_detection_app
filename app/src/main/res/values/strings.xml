@@ -11,8 +11,7 @@
     <string name="original_images">Original images</string>
     <string name="analysed_images">Analysed images</string>
     <string name="original_and_analysed_images">Original and Analysed images</string>
-    <string name="total_white_blood_cells">Total white blood cells:</string>
-    <string name="total_trophozoites">Total trophozoites:</string>
+    <string name="total_afb">Total AFB:</string>
     <string name="time_taken">Time taken:</string>
     <string name="total_time_taken">Total time taken:</string>
 </resources>

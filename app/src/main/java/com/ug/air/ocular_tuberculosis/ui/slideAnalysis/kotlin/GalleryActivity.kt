@@ -59,8 +59,7 @@ class GalleryActivity : AppCompatActivity() {
     private lateinit var default: String
     private var imagePath: String? = null
     private var imagesTotal: Int = 0
-    private var imagesWbc: Int = 0
-    private var imagesTrop: Int = 0
+    private var imagesAfb: Int = 0
     private var imagesTime: String? = null
     private lateinit var cameraLauncher: ActivityResultLauncher<Intent>
     private var imagesArrayList: ArrayList<Image> = ArrayList()
@@ -120,6 +119,8 @@ class GalleryActivity : AppCompatActivity() {
             if (result.resultCode == Activity.RESULT_OK) {
                 val file = imagePath?.let { File(it) }
 
+                Log.d("Chodrine", "onCreate: $imagePath")
+
                 file?.let {
                     val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
                     val contentUri = Uri.fromFile(it)
@@ -128,7 +129,9 @@ class GalleryActivity : AppCompatActivity() {
 
                     saveData()
                     imagePath = null
-                    val newItems = loadMediaItems()
+
+                    Log.d("Chodrine", "onCreate: Hello")
+                    val newItems = ArrayList(loadMediaItems())
                     adapterMedia.submitList(newItems)
                 }
 
@@ -144,7 +147,8 @@ class GalleryActivity : AppCompatActivity() {
             setDataDefault()
             askCameraPermission()
         } else  {
-            default = screen.toString()
+//            default = screen.toString()
+            default = "original"
             setDataDefault()
         }
     }
@@ -167,13 +171,11 @@ class GalleryActivity : AppCompatActivity() {
         }
 
         val images: TextView = dialog.findViewById(R.id.images)
-        val wbc: TextView = dialog.findViewById(R.id.wbc)
-        val trop: TextView = dialog.findViewById(R.id.trop)
+        val afb: TextView = dialog.findViewById(R.id.afb)
         val time: TextView = dialog.findViewById(R.id.time)
 
         images.text = "$imagesTotal"
-        wbc.text = "$imagesWbc"
-        trop.text = "$imagesTrop"
+        afb.text = "$imagesAfb"
         time.text = imagesTime
 
         dialog.show()
@@ -229,12 +231,13 @@ class GalleryActivity : AppCompatActivity() {
 
         for (image in imagesArrayList) {
             if (image.slideName == slideName) {
-                urlList = image.images.reversed().toMutableList() as ArrayList<Urls>
+                val newUrlList = image.images.reversed().toMutableList() as ArrayList<Urls>
+                urlList = newUrlList
                 if (default != "original") {
                     getTotals()
                 }
 
-                return urlList
+                return ArrayList(newUrlList)
             }
         }
 
@@ -368,8 +371,7 @@ class GalleryActivity : AppCompatActivity() {
 
     private fun getTotals () {
         imagesTotal = urlList.size
-        imagesWbc = urlList.sumOf { it.wbc }
-        imagesTrop = urlList.sumOf { it.trop }
+        imagesAfb = urlList.sumOf { it.afb }
         val times = urlList.sumOf { it.inferenceTime }
         imagesTime = millisecondsToMinutesSeconds(times)
     }
@@ -400,7 +402,7 @@ class GalleryActivity : AppCompatActivity() {
             photoFile?.let { file ->
                 val photoURI = FileProvider.getUriForFile(
                     this,
-                    "com.ug.air.ocular_malaria",
+                    "com.ug.air.ocular_tuberculosis",
                     file
                 )
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
@@ -415,7 +417,7 @@ class GalleryActivity : AppCompatActivity() {
         val imageFileName = "Ocular_${uuid}_$timeStamp"
 
         // Get the pictures directory in internal storage
-        val name = "Ocular/${slideName}/original"
+        val name = "Ocular/Tuberculosis/${slideName}/original"
         val storageDir = File(
             Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), name)
@@ -468,10 +470,12 @@ class GalleryActivity : AppCompatActivity() {
             ArrayList()
         }
 
+        Log.d("chodrine", "saveData: $imagePath")
+
         var slideExists : Boolean = false
         for (image in imagesArrayList) {
             if (image.slideName == slideName) {
-                val urls = Urls(imagePath, "", 0, 0, 0, false, false)
+                val urls = Urls(imagePath, "", 0, 0, false, false)
                 image.images.add(urls)
                 slideExists = true
                 break
@@ -480,7 +484,7 @@ class GalleryActivity : AppCompatActivity() {
 
         if (!slideExists) {
             val imagesList = ArrayList<Urls>()
-            val urls = Urls(imagePath, "", 0, 0, 0, false, false)
+            val urls = Urls(imagePath, "", 0, 0, false, false)
             imagesList.add(urls)
             imagesArrayList.add(Image(slideName, "", imagesList))
         }
@@ -490,6 +494,8 @@ class GalleryActivity : AppCompatActivity() {
         editor.putInt(SLIDE_COUNT, slideCount)
         editor.putString(IMAGES, json2)
         editor.apply()
+
+        Log.d("chodrines", "saveData: $imagesArrayList")
 
     }
 
@@ -503,8 +509,7 @@ class GalleryActivity : AppCompatActivity() {
             combinedList.add(Urls(
                 url.original,
                 url.analysed,
-                url.trop,
-                url.wbc,
+                url.afb,
                 url.inferenceTime,
                 true,  // isBothCategory
                 false  // isAnalysedView
@@ -513,8 +518,7 @@ class GalleryActivity : AppCompatActivity() {
             combinedList.add(Urls(
                 url.original,
                 url.analysed,
-                url.trop,
-                url.wbc,
+                url.afb,
                 url.inferenceTime,
                 true,  // isBothCategory
                 true   // isAnalysedView

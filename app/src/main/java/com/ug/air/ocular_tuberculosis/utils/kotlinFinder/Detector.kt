@@ -24,16 +24,17 @@ import java.io.File
 import androidx.core.graphics.scale
 import androidx.core.graphics.get
 import com.ug.air.ocular_tuberculosis.ui.HomeActivity.IMAGES
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.system.measureTimeMillis
 
 class Detector (private val context: Context) {
 
-    private val inputSize = 640
-    private val confidenceThreshold = 0.20f
-    private val nmsThreshold = 0.2f
+    private val inputSize = 960
+    private val confidenceThreshold = 0.25f
+    private val nmsThreshold = 0.45f
     private val classesList = mapOf(
-        0 to "trophozoites",
-        1 to "wbc"
+        0 to "AFB",
     )
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
@@ -41,7 +42,7 @@ class Detector (private val context: Context) {
     suspend fun processImage(originalBitmap: Bitmap, originalPath: String): Bitmap? =
         withContext(Dispatchers.IO) {
             try {
-                val modelFile = "260F729BAC60.tflite"
+                val modelFile = "270A42F7C3A3.tflite"
                 val interpreter = ModelLoader.loadModel(context, modelFile)
                     ?: throw IllegalStateException("Failed to load TFLite model")
 
@@ -59,7 +60,7 @@ class Detector (private val context: Context) {
                     }
 
                     // Prepare output
-                    val outputBuffer = Array(1) { Array(6) { FloatArray(8400) } }
+                    val outputBuffer = Array(1) { Array(300) { FloatArray(6) } }
 
                     val inferenceTime = measureTimeMillis {
                         // Run inference
@@ -74,40 +75,62 @@ class Detector (private val context: Context) {
                     val detections = ArrayList<Detection>()
 
                     // Use actual bitmap dimensions instead of hardcoded values
-                    val originalWidth = originalBitmap.width
-                    val originalHeight = originalBitmap.height
+//                    val originalWidth = originalBitmap.width
+//                    val originalHeight = originalBitmap.height
+                    val originalWidth = originalBitmap.width.toFloat()
+                    val originalHeight = originalBitmap.height.toFloat()
 
-                    for (i in 0 until 8400) {
-                        // Get class scores (indices 4-5)
-                        var maxScore = 0f
-                        var classId = -1
-                        for (j in 0 until 2) { // 2 classesList
-                            val score = outputBuffer[0][4 + j][i]
-                            if (score > maxScore) {
-                                maxScore = score
-                                classId = j
-                            }
-                        }
+//                    for (i in 0 until 300) {
+//                        // Get class scores (indices 4-5)
+//                        var maxScore = 0f
+//                        var classId = -1
+//                        for (j in 0 until 2) { // 2 classesList
+//                            val score = outputBuffer[0][4 + j][i]
+//                            if (score > maxScore) {
+//                                maxScore = score
+//                                classId = j
+//                            }
+//                        }
+//
+//                        if (maxScore > confidenceThreshold && classId != -1) {
+//                            // Get bounding box coordinates
+//                            val x = outputBuffer[0][0][i] // center_x
+//                            val y = outputBuffer[0][1][i] // center_y
+//                            val w = outputBuffer[0][2][i] // width
+//                            val h = outputBuffer[0][3][i] // height
+//
+//                            // Convert to pixel coordinates
+//                            val left = maxOf(0f, minOf(originalWidth.toFloat(), (x - w/2) * originalWidth))
+//                            val top = maxOf(0f, minOf(originalHeight.toFloat(), (y - h/2) * originalHeight))
+//                            val right = maxOf(0f, minOf(originalWidth.toFloat(), (x + w/2) * originalWidth))
+//                            val bottom = maxOf(0f, minOf(originalHeight.toFloat(), (y + h/2) * originalHeight))
+//
+////                            Log.d("Detection all boxex", "Confidence: %.3f, Box: [%.0f, %.0f, %.0f, %.0f]"
+////                                .format(maxScore, left, top, right, bottom))
+//
+//                            if (right > left && bottom > top) {
+//                                detections.add(Detection(classId, maxScore, left, top, right, bottom))
+////                                Log.d("Malaria", "runDetection: Box added")
+//                            }
+//                        }
+//                    }
 
-                        if (maxScore > confidenceThreshold && classId != -1) {
-                            // Get bounding box coordinates
-                            val x = outputBuffer[0][0][i] // center_x
-                            val y = outputBuffer[0][1][i] // center_y
-                            val w = outputBuffer[0][2][i] // width
-                            val h = outputBuffer[0][3][i] // height
+                    for (i in 0 until 300) {
+                        val x = outputBuffer[0][i][0]
+                        val y = outputBuffer[0][i][1]
+                        val w = outputBuffer[0][i][2]
+                        val h = outputBuffer[0][i][3]
+                        val classId = outputBuffer[0][i][4].toInt()
+                        val confidence = outputBuffer[0][i][5]
 
-                            // Convert to pixel coordinates
-                            val left = maxOf(0f, minOf(originalWidth.toFloat(), (x - w/2) * originalWidth))
-                            val top = maxOf(0f, minOf(originalHeight.toFloat(), (y - h/2) * originalHeight))
-                            val right = maxOf(0f, minOf(originalWidth.toFloat(), (x + w/2) * originalWidth))
-                            val bottom = maxOf(0f, minOf(originalHeight.toFloat(), (y + h/2) * originalHeight))
-
-//                            Log.d("Detection all boxex", "Confidence: %.3f, Box: [%.0f, %.0f, %.0f, %.0f]"
-//                                .format(maxScore, left, top, right, bottom))
+                        if (confidence > confidenceThreshold) {
+                            val left = max(0f, min(originalWidth, (x - w / 2) * originalWidth))
+                            val top = max(0f, min(originalHeight, (y - h / 2) * originalHeight))
+                            val right = max(0f, min(originalWidth, (x + w / 2) * originalWidth))
+                            val bottom = max(0f, min(originalHeight, (y + h / 2) * originalHeight))
 
                             if (right > left && bottom > top) {
-                                detections.add(Detection(classId, maxScore, left, top, right, bottom))
-//                                Log.d("Malaria", "runDetection: Box added")
+                                detections.add(Detection(classId, confidence, left, top, right, bottom))
                             }
                         }
                     }
@@ -144,29 +167,6 @@ class Detector (private val context: Context) {
                             detection.bottom,
                             boxPaint
                         )
-
-                        // Draw label
-//                        val label = String.format("%s", classesList[detection.classId])
-//                        val textPaint = Paint().apply {
-//                            color = Color.WHITE
-//                            textSize = 50f
-//                        }
-//
-//                        val bgPaint = Paint().apply {
-//                            color = Color.BLACK
-//                            style = Paint.Style.FILL
-//                            alpha = 180
-//                        }
-//
-//                        val textWidth = textPaint.measureText(label)
-//                        canvas.drawRect(
-//                            detection.left,
-//                            detection.top - 50f,
-//                            detection.left + textWidth + 10f,
-//                            detection.top,
-//                            bgPaint
-//                        )
-//                        canvas.drawText(label, detection.left + 5f, detection.top - 10f, textPaint)
                     }
                     Log.d("ObjectDetector", "Detections: $classCounts")
 
@@ -249,7 +249,7 @@ class Detector (private val context: Context) {
             val selection = "${MediaStore.MediaColumns.DISPLAY_NAME} = ? AND ${MediaStore.MediaColumns.RELATIVE_PATH} LIKE ?"
             val selectionArgs = arrayOf(
                 "${baseName}.jpg",
-                "Pictures/Ocular/$slideName/analysed%"
+                "Pictures/Ocular/Tuberculosis/$slideName/analysed%"
             )
 
             // Query for existing file
@@ -272,7 +272,7 @@ class Detector (private val context: Context) {
             val contentValues = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, "${baseName}.jpg")
                 put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-                put(MediaStore.MediaColumns.RELATIVE_PATH, "Pictures/Ocular/Malaria/$slideName/analysed")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, "Pictures/Ocular/Tuberculosis/$slideName/analysed")
             }
 
             val imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
@@ -311,8 +311,8 @@ class Detector (private val context: Context) {
 
     private fun updateList(filePath: String, classCounts: Map<String, Int>, slideName: String, original: String, inferenceTimeMs: Long) {
 
-        val trophozoitesCount = classCounts.getOrDefault("trophozoites", 0)
-        val wbcCount = classCounts.getOrDefault("wbc", 0)
+        val afbCount = classCounts.getOrDefault("AFB", 0)
+//        val wbcCount = classCounts.getOrDefault("wbc", 0)
 
         val sharedPreferences: SharedPreferences = context.getSharedPreferences(
             CameraActivity.GALLERY,
@@ -331,8 +331,7 @@ class Detector (private val context: Context) {
                 for (url in image.images) {
                     if (url.original == original) {
                         url.analysed = filePath
-                        url.wbc = wbcCount
-                        url.trop = trophozoitesCount
+                        url.afb = afbCount
                         url.inferenceTime = inferenceTimeMs
                         break
                     }
