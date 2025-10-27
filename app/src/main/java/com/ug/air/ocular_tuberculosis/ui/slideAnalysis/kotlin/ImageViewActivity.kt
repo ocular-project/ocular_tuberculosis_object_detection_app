@@ -179,7 +179,6 @@ class ImageViewActivity : AppCompatActivity() {
 
     private fun putString () {
         val intent = Intent(this, GalleryActivity::class.java)
-        intent.putExtra("Screen", "both")
         startActivity(intent)
     }
 }

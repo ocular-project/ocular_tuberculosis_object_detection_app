@@ -270,14 +270,14 @@ public class HomeActivity extends AppCompatActivity {
                 dialog.dismiss();
 
                 Intent intent = new Intent(HomeActivity.this, GalleryActivity.class);
-                intent.putExtra("Screen", "Home");
+                intent.putExtra("Screen", "Camera");
                 startActivity(intent);
             }
             else {
                 dialog.dismiss();
 
                 Intent intent = new Intent(HomeActivity.this, GalleryActivity.class);
-                intent.putExtra("Screen", "Home");
+                intent.putExtra("Screen", "Camera");
                 startActivity(intent);
             }
 

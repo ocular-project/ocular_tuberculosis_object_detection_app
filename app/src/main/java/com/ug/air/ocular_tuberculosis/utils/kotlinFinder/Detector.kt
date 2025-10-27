@@ -10,7 +10,6 @@ import android.graphics.Paint
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.ug.air.ocular_tuberculosis.ui.HomeActivity
@@ -24,6 +23,8 @@ import java.io.File
 import androidx.core.graphics.scale
 import androidx.core.graphics.get
 import com.ug.air.ocular_tuberculosis.ui.HomeActivity.IMAGES
+import com.ug.air.ocular_tuberculosis.ui.HomeActivity.SLIDE_NAME
+import com.ug.air.ocular_tuberculosis.ui.slideAnalysis.CameraActivity.GALLERY
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.system.measureTimeMillis
@@ -50,6 +51,7 @@ class Detector (private val context: Context) {
                     val scaledBitmap = originalBitmap.scale(inputSize, inputSize)
                     val input = Array(1) { Array(inputSize) { Array(inputSize) { FloatArray(3) } } }
 
+                    // Normalize input to [0, 1]
                     for (y in 0 until inputSize) {
                         for (x in 0 until inputSize) {
                             val pixel = scaledBitmap[x, y]
@@ -59,7 +61,7 @@ class Detector (private val context: Context) {
                         }
                     }
 
-                    // Prepare output
+                    // Prepare output - [1, 300, 6]
                     val outputBuffer = Array(1) { Array(300) { FloatArray(6) } }
 
                     val inferenceTime = measureTimeMillis {
@@ -74,61 +76,73 @@ class Detector (private val context: Context) {
                     val originalWidth = originalBitmap.width.toFloat()
                     val originalHeight = originalBitmap.height.toFloat()
 
-                    var validDetectionsCount = 0
-                    var highConfidenceCount = 0
+                    Log.d("ObjectDetector", "Original dimensions: ${originalWidth}x${originalHeight}")
 
                     for (i in 0 until 300) {
-                        val xCenter = outputBuffer[0][i][0]
-                        val yCenter = outputBuffer[0][i][1]
-                        val width = outputBuffer[0][i][2]
-                        val height = outputBuffer[0][i][3]
-                        val classId = outputBuffer[0][i][4].toInt()
-                        val confidence = outputBuffer[0][i][5]
+                        // Read output correctly: [x1, y1, x2, y2, confidence, class]
+                        val x1_raw = outputBuffer[0][i][0]
+                        val y1_raw = outputBuffer[0][i][1]
+                        val x2_raw = outputBuffer[0][i][2]
+                        val y2_raw = outputBuffer[0][i][3]
+                        val confidence = outputBuffer[0][i][4]
+                        val classId = outputBuffer[0][i][5].toInt()
 
-                        if (i < 5) {
-                            Log.d("ObjectDetector", "Detection $i: x=$xCenter, y=$yCenter, w=$width, h=$height, cls=$classId, conf=$confidence")
+                        // Log first few detections for debugging
+                        if (i < 5 && confidence > 0.1f) {
+                            Log.d("ObjectDetector", "Detection $i: x1=$x1_raw, y1=$y1_raw, x2=$x2_raw, y2=$y2_raw, conf=$confidence, cls=$classId")
                         }
 
-                        if (confidence > confidenceThreshold) {
-                            validDetectionsCount++
-                            val isNormalized = xCenter <= 1.0f && yCenter <= 1.0f
+                        if (confidence > confidenceThreshold && classId != -1) {
+                            // Check if coordinates are normalized (0-1)
+                            val isNormalized = x2_raw <= 1.0f && y2_raw <= 1.0f
 
-                            val left: Float
-                            val top: Float
-                            val right: Float
-                            val bottom: Float
+                            val x1: Float
+                            val y1: Float
+                            val x2: Float
+                            val y2: Float
 
                             if (isNormalized) {
-                                // Coordinates are normalized (0-1), scale to image dimensions
-                                left = max(0f, min(originalWidth, (xCenter - width / 2) * originalWidth))
-                                top = max(0f, min(originalHeight, (yCenter - height / 2) * originalHeight))
-                                right = max(0f, min(originalWidth, (xCenter + width / 2) * originalWidth))
-                                bottom = max(0f, min(originalHeight, (yCenter + height / 2) * originalHeight))
+                                // Scale normalized coordinates to original image size
+                                x1 = x1_raw * originalWidth
+                                y1 = y1_raw * originalHeight
+                                x2 = x2_raw * originalWidth
+                                y2 = y2_raw * originalHeight
                             } else {
-                                // Coordinates are already in pixel space (less common)
-                                left = max(0f, min(originalWidth, xCenter - width / 2))
-                                top = max(0f, min(originalHeight, yCenter - height / 2))
-                                right = max(0f, min(originalWidth, xCenter + width / 2))
-                                bottom = max(0f, min(originalHeight, yCenter + height / 2))
+                                // Coordinates are in pixels relative to input size (960)
+                                // Scale to original image size
+                                val scaleX = originalWidth / inputSize
+                                val scaleY = originalHeight / inputSize
+                                x1 = x1_raw * scaleX
+                                y1 = y1_raw * scaleY
+                                x2 = x2_raw * scaleX
+                                y2 = y2_raw * scaleY
                             }
 
+                            // Clip to image bounds
+                            val left = max(0f, min(originalWidth, x1))
+                            val top = max(0f, min(originalHeight, y1))
+                            val right = max(0f, min(originalWidth, x2))
+                            val bottom = max(0f, min(originalHeight, y2))
 
+                            // Validate bounding box
                             if (right > left && bottom > top) {
                                 val boxWidth = right - left
                                 val boxHeight = bottom - top
                                 val boxArea = boxWidth * boxHeight
                                 val imageArea = originalWidth * originalHeight
 
+                                // Filter out very small and very large boxes
                                 if (boxArea > imageArea * 0.0001f && boxArea < imageArea * 0.9f) {
                                     detections.add(Detection(classId, confidence, left, top, right, bottom))
-                                    if (confidence > 0.5f) highConfidenceCount++
+
+                                    if (detections.size <= 5) {
+                                        Log.d("ObjectDetector", "Valid box $i: left=$left, top=$top, right=$right, bottom=$bottom, size=${boxWidth}x${boxHeight}")
+                                    }
                                 }
                             }
                         }
                     }
 
-                    Log.d("ObjectDetector", "Raw detections above threshold: $validDetectionsCount")
-                    Log.d("ObjectDetector", "High confidence detections (>0.5): $highConfidenceCount")
                     Log.d("ObjectDetector", "Valid boxes before NMS: ${detections.size}")
 
                     val finalDetections = applyNMS(detections, nmsThreshold)
@@ -140,6 +154,7 @@ class Detector (private val context: Context) {
                         return@withContext null
                     }
 
+                    // Count detections by class
                     val classCounts = HashMap<String, Int>()
                     for (classId in classesList.keys) {
                         val className = classesList[classId] ?: continue
@@ -147,19 +162,21 @@ class Detector (private val context: Context) {
                         classCounts[className] = count
                     }
 
+                    Log.d("ObjectDetector", "Detections: $classCounts")
+
                     // Draw results on original image
                     val resultBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true)
                     val canvas = Canvas(resultBitmap)
 
                     val boxPaint = Paint().apply {
                         style = Paint.Style.STROKE
-                        strokeWidth = max(5f, originalWidth / 200f) // Scale stroke width with image size
+                        strokeWidth = max(3f, originalWidth / 200f)
                         color = Color.YELLOW
                     }
 
                     val textPaint = Paint().apply {
                         color = Color.YELLOW
-                        textSize = max(24f, originalWidth / 40f)
+                        textSize = max(20f, originalWidth / 50f)
                         style = Paint.Style.FILL
                         isAntiAlias = true
                     }
@@ -183,8 +200,6 @@ class Detector (private val context: Context) {
                             textPaint
                         )
                     }
-
-                    Log.d("ObjectDetector", "Detections: $classCounts")
 
                     saveImage(resultBitmap, originalPath, classCounts, inferenceTime)
                     return@withContext resultBitmap
@@ -250,12 +265,12 @@ class Detector (private val context: Context) {
     private fun saveImage(bitmap: Bitmap, originalPath: String, classCounts: Map<String, Int>, inferenceTimeMs: Long): String? {
 
         sharedPreferences = context.getSharedPreferences(
-            CameraActivity.GALLERY,
-            AppCompatActivity.MODE_PRIVATE
+            GALLERY,
+            Context.MODE_PRIVATE
         )
         editor = sharedPreferences.edit()
 
-        val slideName = sharedPreferences.getString(HomeActivity.SLIDE_NAME, "") ?: ""
+        val slideName = sharedPreferences.getString(SLIDE_NAME, "") ?: ""
 
         return try {
             val filename = File(originalPath).name
@@ -332,7 +347,7 @@ class Detector (private val context: Context) {
 //        val wbcCount = classCounts.getOrDefault("wbc", 0)
 
         val sharedPreferences: SharedPreferences = context.getSharedPreferences(
-            CameraActivity.GALLERY,
+            GALLERY,
             Context.MODE_PRIVATE
         )
         val editor = sharedPreferences.edit()
