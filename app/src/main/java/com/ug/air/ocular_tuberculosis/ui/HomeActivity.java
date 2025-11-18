@@ -40,6 +40,7 @@ import com.ug.air.ocular_tuberculosis.utils.Functions;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
@@ -153,10 +154,11 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         List<String> itemsList = new ArrayList<>();
-        itemsList.add("Select slide");
         for (Image image : imagesArrayList){
             itemsList.add(image.getSlideName());
         }
+        itemsList.add(0, "Select slide");
+        Collections.reverse(itemsList.subList(1, itemsList.size()));
         items_slides = itemsList.toArray(new String[0]);
     }
 

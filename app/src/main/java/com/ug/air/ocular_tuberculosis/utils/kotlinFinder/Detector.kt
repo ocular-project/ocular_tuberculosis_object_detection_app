@@ -31,7 +31,7 @@ import kotlin.system.measureTimeMillis
 
 class Detector (private val context: Context) {
 
-    private val inputSize = 480
+    private val inputSize = 960
     private val confidenceThreshold = 0.25f
     private val nmsThreshold = 0.25f
     private val classesList = mapOf(
@@ -43,8 +43,8 @@ class Detector (private val context: Context) {
     suspend fun processImage(originalBitmap: Bitmap, originalPath: String): Bitmap? =
         withContext(Dispatchers.IO) {
             try {
-//                val modelFile = "270A42F7C3A3.tflite"
-                val modelFile = "7C7275F11B4A.tflite"
+                val modelFile = "270A42F7C3A3.tflite"
+//                val modelFile = "7C7275F11B4A.tflite"
                 val interpreter = ModelLoader.loadModel(context, modelFile)
                     ?: throw IllegalStateException("Failed to load TFLite model")
 
@@ -152,6 +152,7 @@ class Detector (private val context: Context) {
 
                     if (finalDetections.isEmpty()) {
                         Log.d("ObjectDetector", "No detections found")
+                        updateFailedList(originalPath, inferenceTime)
                         return@withContext null
                     }
 
@@ -342,6 +343,48 @@ class Detector (private val context: Context) {
         return filePath
     }
 
+    private fun updateFailedList(original: String, inferenceTimeMs: Long) {
+        sharedPreferences = context.getSharedPreferences(
+            GALLERY,
+            Context.MODE_PRIVATE
+        )
+        editor = sharedPreferences.edit()
+
+        val slideName = sharedPreferences.getString(SLIDE_NAME, "") ?: ""
+
+        val sharedPreferences: SharedPreferences = context.getSharedPreferences(
+            GALLERY,
+            Context.MODE_PRIVATE
+        )
+        val editor = sharedPreferences.edit()
+
+        val gson = Gson()
+        val jsonList = sharedPreferences.getString(IMAGES, null)
+
+        val type = object : TypeToken<ArrayList<Image>>() {}.type
+        val imagesArrayList: ArrayList<Image> = gson.fromJson(jsonList, type) ?: ArrayList()
+
+        for (image in imagesArrayList) {
+            if (image.slideName == slideName) {
+                for (url in image.images) {
+                    if (url.original == original) {
+                        url.analysed = ""
+                        url.afb = 0
+                        url.modelRan = true
+                        url.inferenceTime = inferenceTimeMs
+                        break
+                    }
+                }
+                image.status = "analysed"
+                break
+            }
+        }
+
+        val json2 = gson.toJson(imagesArrayList)
+        editor.putString(IMAGES, json2)
+        editor.apply()
+    }
+
     private fun updateList(filePath: String, classCounts: Map<String, Int>, slideName: String, original: String, inferenceTimeMs: Long) {
 
         val afbCount = classCounts.getOrDefault("AFB", 0)
@@ -365,6 +408,7 @@ class Detector (private val context: Context) {
                     if (url.original == original) {
                         url.analysed = filePath
                         url.afb = afbCount
+                        url.modelRan = true
                         url.inferenceTime = inferenceTimeMs
                         break
                     }

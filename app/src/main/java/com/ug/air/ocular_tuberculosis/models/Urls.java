@@ -7,14 +7,25 @@ public class Urls {
     long inferenceTime;
     Boolean isBothCategory = false;
     Boolean isAnalysedView = false;
+    Boolean modelRan = false;
 
-    public Urls(String original, String analysed, int afb, long inferenceTime, Boolean isBothCategory, Boolean isAnalysedView) {
+    public Urls(String original, String analysed, int afb, long inferenceTime, Boolean isBothCategory, Boolean isAnalysedView, Boolean modelRan) {
         this.original = original;
         this.analysed = analysed;
         this.afb = afb;
         this.inferenceTime = inferenceTime;
         this.isBothCategory = isBothCategory;
         this.isAnalysedView = isAnalysedView;
+        this.modelRan = modelRan;
+    }
+
+    public Boolean getModelRan() {
+        return modelRan;
+    }
+
+    public Urls setModelRan(Boolean modelRan) {
+        this.modelRan = modelRan;
+        return this;
     }
 
     public String getOriginal() {

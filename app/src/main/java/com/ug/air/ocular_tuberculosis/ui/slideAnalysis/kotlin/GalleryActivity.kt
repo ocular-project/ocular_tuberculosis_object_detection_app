@@ -313,6 +313,8 @@ class GalleryActivity : AppCompatActivity() {
 
         camera.setOnClickListener {
             dialog.dismiss()
+            default = "original"
+            setDataDefault()
             askCameraPermission()
         }
 
@@ -368,17 +370,18 @@ class GalleryActivity : AppCompatActivity() {
         editor.putString(CATEGORY, default)
         editor.apply()
 
-        val actualPosition = if (default == "both") {
-            // In "both" mode, convert the position to the original list position
-            position / 2
-        } else {
-            position
-        }
+//        val actualPosition = if (default == "both") {
+//            position / 2
+//        } else {
+//            position
+//        }
+        Log.d("Chodrine Ocular", "sendToImageView: $default")
+        Log.d("Chodrine Ocular", "sendToImageView: $position")
 
 //        Toast.makeText(this@GalleryActivity, "category: $default, Position: $actualPosition", Toast.LENGTH_SHORT).show()
 
         val intent = Intent(this, ImageViewActivity::class.java)
-        intent.putExtra("Position", actualPosition)
+        intent.putExtra("Position", position)
         intent.putExtra("Model", "No")
         startActivity(intent)
     }
@@ -489,7 +492,7 @@ class GalleryActivity : AppCompatActivity() {
         var slideExists : Boolean = false
         for (image in imagesArrayList) {
             if (image.slideName == slideName) {
-                val urls = Urls(imagePath, "", 0, 0, false, false)
+                val urls = Urls(imagePath, "", 0, 0, false, false, false)
                 image.images.add(urls)
                 slideExists = true
                 break
@@ -498,7 +501,7 @@ class GalleryActivity : AppCompatActivity() {
 
         if (!slideExists) {
             val imagesList = ArrayList<Urls>()
-            val urls = Urls(imagePath, "", 0, 0, false, false)
+            val urls = Urls(imagePath, "", 0, 0, false, false, false)
             imagesList.add(urls)
             imagesArrayList.add(Image(slideName, "", imagesList))
         }
@@ -526,7 +529,8 @@ class GalleryActivity : AppCompatActivity() {
                 url.afb,
                 url.inferenceTime,
                 true,  // isBothCategory
-                false  // isAnalysedView
+                false,  // isAnalysedView
+                false
             ))
 
             combinedList.add(Urls(
@@ -535,7 +539,8 @@ class GalleryActivity : AppCompatActivity() {
                 url.afb,
                 url.inferenceTime,
                 true,  // isBothCategory
-                true   // isAnalysedView
+                true,  // isAnalysedView
+                false
             ))
         }
 

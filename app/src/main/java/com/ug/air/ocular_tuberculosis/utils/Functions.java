@@ -96,7 +96,14 @@ public class Functions {
         ArrayList<Current> modelArrayList = gson.fromJson(json, type);
 
         if (modelArrayList != null && !modelArrayList.isEmpty()) {
-            return modelArrayList.get(0); // Return the first item
+            for(Current model: modelArrayList) {
+                if (model.getVersion() == 1){
+                    if (model.getDownload() != null && model.getDownload().isEmpty()) {
+                        // download is empty
+                        return model;
+                    }
+                }
+            }
         }
 
         return null;
