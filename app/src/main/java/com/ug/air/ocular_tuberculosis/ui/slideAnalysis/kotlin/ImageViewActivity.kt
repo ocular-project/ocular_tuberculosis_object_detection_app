@@ -97,10 +97,10 @@ class ImageViewActivity : AppCompatActivity() {
                         .reversed()
                         .toMutableList() as ArrayList<Urls>
 
-//                    urlList = image.images
-//                        .reversed()
-//                        .filter { it.analysed == "" }
-//                        .toMutableList() as ArrayList<Urls>
+                    urlList = image.images
+                        .reversed()
+                        .filter { it.analysed == "" }
+                        .toMutableList() as ArrayList<Urls>
 
                     viewPagerAdapter = ViewPagerAdapter(urlList, this, category, position)
 
@@ -115,7 +115,7 @@ class ImageViewActivity : AppCompatActivity() {
                             lifecycleScope.launch {
                                 try {
                                     // Process the current image
-                                    val processedBitmap = detector.processImage(bitmap, filePath)
+                                    detector.processImage(bitmap, filePath)
 
                                     // Update UI and move to next image on UI thread
                                     withContext(Dispatchers.Main) {
@@ -179,6 +179,7 @@ class ImageViewActivity : AppCompatActivity() {
 
     private fun putString () {
         val intent = Intent(this, GalleryActivity::class.java)
+        intent.putExtra("Screen", "both")
         startActivity(intent)
     }
 }

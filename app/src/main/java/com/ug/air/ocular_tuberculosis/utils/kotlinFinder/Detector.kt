@@ -31,7 +31,7 @@ import kotlin.system.measureTimeMillis
 
 class Detector (private val context: Context) {
 
-    private val inputSize = 960
+    private val inputSize = 480
     private val confidenceThreshold = 0.25f
     private val nmsThreshold = 0.25f
     private val classesList = mapOf(
@@ -43,7 +43,8 @@ class Detector (private val context: Context) {
     suspend fun processImage(originalBitmap: Bitmap, originalPath: String): Bitmap? =
         withContext(Dispatchers.IO) {
             try {
-                val modelFile = "270A42F7C3A3.tflite"
+//                val modelFile = "270A42F7C3A3.tflite"
+                val modelFile = "7C7275F11B4A.tflite"
                 val interpreter = ModelLoader.loadModel(context, modelFile)
                     ?: throw IllegalStateException("Failed to load TFLite model")
 

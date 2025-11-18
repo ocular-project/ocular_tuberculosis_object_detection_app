@@ -130,6 +130,7 @@ public class Functions {
 
             for (Current current : currentList) {
                 if (current.getDisease().equals("Tuberculosis")){
+                    Log.d("Chodrine Ocular", "checkData: " + current);
                     current.setDownload("download");
                     current.setFilename("");
                     currentArrayList.add(current);
@@ -147,29 +148,29 @@ public class Functions {
 
             for (Current current : currentList) {
                 boolean exists = false;
-
-                for (Current existing : currentArrayList) {
-                    if (Objects.equals(existing.getModel_file(), current.getModel_file())) {
-                        exists = true;
-                        // Check if version has changed
-                        if (!Objects.equals(existing.getVersion(), current.getVersion())) {
-                            existing.setVersion(current.getVersion());
-                            existing.setModel_reference(current.getModel_reference());
-                            existing.setAccess_url(current.getAccess_url());
-                            existing.setDownload("update");
-                            dataUpdated = true;
+                if (current.getDisease().equals("Tuberculosis")){
+                    for (Current existing : currentArrayList) {
+                        if (Objects.equals(existing.getModel_file(), current.getModel_file())) {
+                            exists = true;
+                            // Check if version has changed
+                            if (!Objects.equals(existing.getVersion(), current.getVersion())) {
+                                existing.setVersion(current.getVersion());
+                                existing.setModel_reference(current.getModel_reference());
+                                existing.setAccess_url(current.getAccess_url());
+                                existing.setDownload("update");
+                                dataUpdated = true;
+                            }
+                            break;
                         }
-                        break;
+                        Log.d("Model results 1", "checkData: " + current.getModel_name());
                     }
-                    Log.d("Model results 1", "checkData: " + current.getModel_name());
-                }
-
-                if (!exists) {
-                    current.setDownload("download");
-                    current.setFilename("");
-                    currentArrayList.add(current);
-                    dataUpdated = true;
-                    Log.d("Model results 2", "checkData: " + current.getModel_name());
+                    if (!exists) {
+                        current.setDownload("download");
+                        current.setFilename("");
+                        currentArrayList.add(current);
+                        dataUpdated = true;
+                        Log.d("Model results 2", "checkData: " + current.getModel_name());
+                    }
                 }
             }
 
